@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 
 @Injectable()
 export class AppService {
+  constructor(@Inject('API_KEY') private readonly apiKey: string) {}
+
   getHello(): string {
-    return 'Hello World!';
+    return `Hello World! My API Key is ${this.apiKey}`;
   }
 }
