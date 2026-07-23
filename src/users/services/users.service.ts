@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config'; //Agrega la clase ConfigService para poder usar las variables de entorno
 
 import { User } from '../entities/user.entity';
 import { Order } from '../entities/order.entity';
@@ -8,7 +9,10 @@ import { ProductsService } from '../../products/services/products.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private productsService: ProductsService) {}
+  constructor(
+    private productsService: ProductsService,
+    private configService: ConfigService,
+  ) {}
 
   private counterId = 1;
   private users: User[] = [
@@ -21,6 +25,7 @@ export class UsersService {
   ];
 
   findAll() {
+    console.log('API_KEY: ', this.configService.get('API_KEY'));
     return this.users;
   }
 

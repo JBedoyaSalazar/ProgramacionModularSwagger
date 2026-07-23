@@ -1,20 +1,24 @@
 import { HttpModule, HttpService, Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config'; //Importa las variables de entorno
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { ProductsModule } from './products/products.module';
-
-const API_KEY = 'sdadsdsaddsa12312asdsa';
-const API_KEY_PROD = 'PROD123';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
-  imports: [UsersModule, ProductsModule, HttpModule],
+  imports: [
+    HttpModule,
+    ConfigModule.forRoot({
+      envFilePath: '.env',
+      isGlobal: true,
+    }),
+    UsersModule,
+    ProductsModule,
+    DatabaseModule,
+  ],
   controllers: [AppController],
   providers: [
-    {
-      provide: 'API_KEY',
-      useValue: process.env.NODE_ENV === 'prod' ? API_KEY_PROD : API_KEY,
-    },
     {
       provide: 'TASKS',
       useFactory: async (httpService: HttpService) => {
