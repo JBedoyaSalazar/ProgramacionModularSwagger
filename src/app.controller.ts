@@ -7,21 +7,6 @@ export class AppController {
 
   @Get()
   getHello(): string {
-    return 'Hola mundo!';
-  }
-
-  @Get('nuevo')
-  newEndpoint() {
-    return 'yo soy nuevo';
-  }
-
-  @Get('/ruta/')
-  hello() {
-    return 'con /sas/';
-  }
-
-  @Get('useValue')
-  useValue() {
     return this.appService.getHello();
   }
 }

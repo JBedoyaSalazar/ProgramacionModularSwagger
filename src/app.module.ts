@@ -6,11 +6,13 @@ import { UsersModule } from './users/users.module';
 import { ProductsModule } from './products/products.module';
 import { DatabaseModule } from './database/database.module';
 
+import { enviroments } from '../enviroments';
+
 @Module({
   imports: [
     HttpModule,
     ConfigModule.forRoot({
-      envFilePath: '.env',
+      envFilePath: enviroments[process.env.NODE_ENV] || enviroments.dev,
       isGlobal: true,
     }),
     UsersModule,
