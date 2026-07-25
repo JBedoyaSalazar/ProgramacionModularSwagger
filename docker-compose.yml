@@ -1,0 +1,28 @@
+version: '3.9'
+
+services:
+  mongo:
+    image: mongo:8.0
+
+    ports:
+      - "27018:27017"
+
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: platzi_store
+
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  mongodb_config:
