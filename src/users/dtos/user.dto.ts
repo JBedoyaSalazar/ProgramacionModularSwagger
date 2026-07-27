@@ -2,6 +2,8 @@ import { IsString, IsNotEmpty, IsEmail, Length } from 'class-validator';
 import { PartialType } from '@nestjs/swagger';
 import { ApiProperty } from '@nestjs/swagger';
 
+import { Role } from '../enums/role.enum';
+
 export class CreateUserDto {
   @ApiProperty({
     description: 'The email of the user',
@@ -25,7 +27,7 @@ export class CreateUserDto {
     example: 'admin || user',
   })
   @IsNotEmpty()
-  readonly role!: string;
+  readonly role!: Role;
 }
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {}

@@ -1,75 +1,101 @@
-import { Injectable, NotFoundException, Inject } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config'; //Agrega la clase ConfigService para poder usar las variables de entorno
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import { ObjectId } from 'mongodb';
 
 import { User } from '../entities/user.entity';
 import { Order } from '../entities/order.entity';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
 
 import { ProductsService } from '../../products/services/products.service';
+import { DatabaseService } from '../../database/database.service';
 
 @Injectable()
 export class UsersService {
+  private readonly collectionName = 'users';
   constructor(
     private productsService: ProductsService,
-    private configService: ConfigService,
+    private readonly databaseService: DatabaseService,
   ) {}
 
-  private counterId = 1;
-  private users: User[] = [
-    {
-      id: 1,
-      email: 'correo@mail.com',
-      password: '12345',
-      role: 'admin',
-    },
-  ];
-
-  findAll() {
-    console.log('API_KEY: ', this.configService.get('API_KEY'));
-    return this.users;
+  private async getCollection() {
+    const db = await this.databaseService.connect();
+    return db.collection<User>(this.collectionName);
   }
 
-  findOne(id: number) {
-    const user = this.users.find((item) => item.id === id);
+  async findAll() {
+    const usersCollection = await this.getCollection();
+    return await usersCollection.find().toArray();
+  }
+
+  async findOne(id: string) {
+    const usersCollection = await this.getCollection();
+
+    if (!ObjectId.isValid(id)) {
+      throw new BadRequestException('Invalid ObjectId');
+    }
+
+    const objectId = new ObjectId(id);
+    const user = await usersCollection.findOne({ _id: objectId });
+
     if (!user) {
       throw new NotFoundException(`User #${id} not found`);
     }
     return user;
   }
 
-  create(data: CreateUserDto) {
-    this.counterId = this.counterId + 1;
-    const newUser = {
-      id: this.counterId,
+  async create(data: CreateUserDto) {
+    const usersCollection = await this.getCollection();
+
+    const user: User = {
       ...data,
     };
-    this.users.push(newUser);
-    return newUser;
-  }
 
-  update(id: number, changes: UpdateUserDto) {
-    const user = this.findOne(id);
-    const index = this.users.findIndex((item) => item.id === id);
-    this.users[index] = {
-      ...user,
-      ...changes,
+    const result = await usersCollection.insertOne({
+      ...data,
+    });
+
+    return {
+      _id: result.insertedId,
+      ...data,
     };
-    return this.users[index];
   }
 
-  remove(id: number) {
-    const index = this.users.findIndex((item) => item.id === id);
-    if (index === -1) {
-      throw new NotFoundException(`User #${id} not found`);
-    }
-    this.users.splice(index, 1);
-    return true;
+  async update(id: string, changes: UpdateUserDto) {
+    const usersCollection = await this.getCollection();
+
+    const user = await this.findOne(id);
+
+    await usersCollection.updateOne(
+      { _id: user._id },
+      {
+        $set: changes,
+      },
+    );
+
+    return usersCollection.findOne({
+      _id: user._id,
+    });
   }
 
-  findOrdersByUser(id: number): Order {
+  async remove(id: string) {
+    const usersCollection = await this.getCollection();
+
+    const user = await this.findOne(id);
+
+    await usersCollection.deleteOne({
+      _id: user._id,
+    });
+
+    return user;
+  }
+
+  async findOrdersByUser(id: string): Promise<Order> {
     return {
       date: new Date(),
-      user: this.findOne(id),
+      user: await this.findOne(id),
       products: this.productsService.findAll(),
     };
   }

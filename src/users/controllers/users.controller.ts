@@ -6,7 +6,6 @@ import {
   Body,
   Put,
   Delete,
-  ParseIntPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -43,13 +42,13 @@ export class UsersController {
   @ApiParam({
     name: 'id',
     description: 'The id of the user',
-    example: 1,
+    example: '1',
   })
   @ApiOkResponse({
     description: 'The user was retrieved successfully',
     type: CreateUserDto,
   })
-  get(@Param('id', ParseIntPipe) id: number) {
+  get(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
@@ -66,7 +65,7 @@ export class UsersController {
     description: 'The orders were retrieved successfully',
     type: [Order],
   })
-  getOrders(@Param('id', ParseIntPipe) id: number) {
+  getOrders(@Param('id') id: string) {
     return this.usersService.findOrdersByUser(id);
   }
 
@@ -95,10 +94,7 @@ export class UsersController {
     description: 'The user was updated successfully',
     type: UpdateUserDto,
   })
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() payload: UpdateUserDto,
-  ) {
+  update(@Param('id') id: string, @Body() payload: UpdateUserDto) {
     return this.usersService.update(id, payload);
   }
 
@@ -114,7 +110,7 @@ export class UsersController {
   @ApiOkResponse({
     description: 'The user was deleted successfully',
   })
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.remove(+id);
+  remove(@Param('id') id: string) {
+    return this.usersService.remove(id);
   }
 }
