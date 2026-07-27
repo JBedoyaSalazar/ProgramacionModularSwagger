@@ -19,6 +19,7 @@ import { enviroments } from '../enviroments';
         API_KEY: Joi.string().required(),
         DB_NAME: Joi.string().required(),
         DB_PORT: Joi.number().required(),
+        DB_URI: Joi.string().required(),
       }),
     }),
     UsersModule,

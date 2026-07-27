@@ -1,12 +1,13 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { env } from './config/env.interface';
+
+import { DatabaseService } from './database/database.service';
 
 @Injectable()
 export class AppService {
   constructor(
-    // @Inject('API_KEY') private readonly apiKey: string,
-    // @Inject('TASKS') private readonly tasks: string[],
+    private databaseService: DatabaseService,
     private configService: ConfigService<env>,
   ) {}
 
@@ -18,5 +19,11 @@ export class AppService {
 
     return `<h1>Hello World!</h1>
     API Key: ${apiKey} - DB Name: ${dbName} - DB Port: ${dbPort}`;
+  }
+
+  async getTasks() {
+    const database = await this.databaseService.connect();
+    const tasksCollection = await database.collection('tasks');
+    return await tasksCollection.find().toArray();
   }
 }
