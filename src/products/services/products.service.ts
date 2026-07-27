@@ -12,7 +12,6 @@ export class ProductsService {
   ) {}
 
   async findAll() {
-    console.log('ProductsService.findAll() called from MongoDb');
     const products = await this.productModel.find().exec();
     return products;
   }
