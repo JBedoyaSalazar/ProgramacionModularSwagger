@@ -96,7 +96,7 @@ export class UsersService {
     return {
       date: new Date(),
       user: await this.findOne(id),
-      products: this.productsService.findAll(),
+      products: await this.productsService.findAll(),
     };
   }
 }
