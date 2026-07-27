@@ -12,8 +12,9 @@ export class ProductsService {
   ) {}
 
   async findAll() {
+    console.log('ProductsService.findAll() called from MongoDb');
     const products = await this.productModel.find().exec();
-    return this.productModel.find().exec();
+    return products;
   }
 
   async findOne(id: string) {
@@ -24,33 +25,27 @@ export class ProductsService {
     return product;
   }
 
-  // create(payload: CreateProductDto) {
-  //   console.log(payload);
-  //   this.counterId = this.counterId + 1;
-  //   const newProduct = {
-  //     id: this.counterId,
-  //     ...payload,
-  //   };
-  //   this.products.push(newProduct);
-  //   return newProduct;
-  // }
+  async create(payload: CreateProductDto) {
+    const newProduct = await this.productModel.create(payload);
+    return newProduct.save();
+  }
 
-  // update(id: number, payload: UpdateProductDto) {
-  //   const product = this.findOne(id);
-  //   const index = this.products.findIndex((item) => item.id === id);
-  //   this.products[index] = {
-  //     ...product,
-  //     ...payload,
-  //   };
-  //   return this.products[index];
-  // }
+  async update(id: string, payload: UpdateProductDto) {
+    const changedProduct = await this.productModel
+      .findByIdAndUpdate(id, { $set: payload }, { new: true })
+      .exec();
 
-  // remove(id: number) {
-  //   const index = this.products.findIndex((item) => item.id === id);
-  //   if (index === -1) {
-  //     throw new NotFoundException(`Product #${id} not found`);
-  //   }
-  //   this.products.splice(index, 1);
-  //   return true;
-  // }
+    if (!changedProduct) {
+      throw new NotFoundException(`Product #${id} not found`);
+    }
+    return changedProduct;
+  }
+
+  async remove(id: string) {
+    const product = await this.productModel.findById(id).exec();
+    if (!product) {
+      throw new NotFoundException(`Product #${id} not found`);
+    }
+    return `Product #${id} deleted successfully`;
+  }
 }

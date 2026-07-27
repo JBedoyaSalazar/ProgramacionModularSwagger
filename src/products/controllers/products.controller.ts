@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Query,
   Param,
   Post,
   Body,
@@ -9,11 +8,7 @@ import {
   Delete,
   HttpStatus,
   HttpCode,
-  Res,
-  // ParseIntPipe,
 } from '@nestjs/common';
-import { Response } from 'express';
-import { ParseIntPipe } from '../../common/parse-int.pipe';
 import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 
 import { CreateProductDto, UpdateProductDto } from '../dtos/products.dtos';
@@ -33,6 +28,7 @@ export class ProductsController {
     type: [CreateProductDto],
   })
   async getProducts() {
+    console.log('ProductsController ejecutandose');
     return await this.productsService.findAll();
   }
 
@@ -49,32 +45,28 @@ export class ProductsController {
     return await this.productsService.findOne(productId);
   }
 
-  // @Post()
-  // @ApiOperation({
-  //   summary: 'Create a new product',
-  // })
-  // @HttpCode(HttpStatus.CREATED)
-  // create(@Body() payload: CreateProductDto) {
-  //   // return {
-  //   //   message: 'accion de crear',
-  //   //   payload,
-  //   // };
-  //   return this.productsService.create(payload);
-  // }
+  @Post()
+  @ApiOperation({
+    summary: 'Create a new product',
+  })
+  @HttpCode(HttpStatus.CREATED)
+  create(@Body() payload: CreateProductDto) {
+    return this.productsService.create(payload);
+  }
 
-  // @Put(':id')
-  // @ApiOperation({
-  //   summary: 'Update a product by id',
-  // })
-  // update(@Param('id') id: string, @Body() payload: UpdateProductDto) {
-  //   return this.productsService.update(+id, payload);
-  // }
+  @Put(':id')
+  @ApiOperation({
+    summary: 'Update a product by id',
+  })
+  update(@Param('id') id: string, @Body() payload: UpdateProductDto) {
+    return this.productsService.update(id, payload);
+  }
 
-  // @Delete(':id')
-  // @ApiOperation({
-  //   summary: 'Delete a product by id',
-  // })
-  // delete(@Param('id') id: string) {
-  //   return this.productsService.remove(+id);
-  // }
+  @Delete(':id')
+  @ApiOperation({
+    summary: 'Delete a product by id',
+  })
+  delete(@Param('id') id: string) {
+    return this.productsService.remove(id);
+  }
 }
