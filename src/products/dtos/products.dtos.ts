@@ -77,4 +77,24 @@ export class FilterProductsDto {
   @Min(0)
   @IsOptional()
   offset?: number;
+
+  @ApiProperty({
+    description: 'The minimum price of the products to return',
+    example: 10,
+    required: false,
+  })
+  @IsNumber()
+  @IsPositive()
+  @IsOptional()
+  minPrice?: number;
+
+  @ApiProperty({
+    description: 'The maximum price of the products to return',
+    example: 100,
+    required: false,
+  })
+  @IsNumber()
+  @IsPositive()
+  @IsOptional()
+  maxPrice?: number;
 }
