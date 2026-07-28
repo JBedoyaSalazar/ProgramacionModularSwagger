@@ -28,7 +28,7 @@ export class Product extends Document {
       name: { type: String, required: true },
       image: { type: String, required: true },
     }),
-  )
+  ) //Relacion 1:1 Embebida
   category: Record<string, any>;
 
   @Prop({ type: Types.ObjectId, ref: Brand.name })
