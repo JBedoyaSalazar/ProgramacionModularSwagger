@@ -1,58 +1,66 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 import { Customer } from '../entities/customer.entity';
 import { CreateCustomerDto, UpdateCustomerDto } from '../dtos/customer.dto';
 
 @Injectable()
 export class CustomersService {
-  private counterId = 1;
-  private customers: Customer[] = [
-    {
-      id: 1,
-      name: 'Nicolas',
-      lastName: 'Molina',
-      phone: '3111111212',
-    },
-  ];
+  constructor(
+    @InjectModel(Customer.name) private customerModel: Model<Customer>,
+  ) {}
 
-  findAll() {
-    return this.customers;
+  async findAll() {
+    return this.customerModel.find().exec();
   }
 
-  findOne(id: number) {
-    const customer = this.customers.find((item) => item.id === id);
+  async findOne(id: string) {
+    const customer = await this.customerModel.findById(id).exec();
     if (!customer) {
       throw new NotFoundException(`Customer #${id} not found`);
     }
     return customer;
   }
 
-  create(data: CreateCustomerDto) {
-    this.counterId = this.counterId + 1;
-    const newCustomer = {
-      id: this.counterId,
-      ...data,
-    };
-    this.customers.push(newCustomer);
-    return newCustomer;
-  }
-
-  update(id: number, changes: UpdateCustomerDto) {
-    const customer = this.findOne(id);
-    const index = this.customers.findIndex((item) => item.id === id);
-    this.customers[index] = {
-      ...customer,
-      ...changes,
-    };
-    return this.customers[index];
-  }
-
-  remove(id: number) {
-    const index = this.customers.findIndex((item) => item.id === id);
-    if (index === -1) {
-      throw new NotFoundException(`Customer #${id} not found`);
+  async create(data: CreateCustomerDto) {
+    try {
+      const newCustomer = new this.customerModel(data);
+      await newCustomer.save();
+      return newCustomer;
+    } catch (error) {
+      if (error.code === 11000) {
+        throw new ForbiddenException(
+          'Error create customer: Phone number already exists',
+        );
+      }
+      throw error;
     }
-    this.customers.splice(index, 1);
-    return true;
+  }
+
+  async update(id: string, changes: UpdateCustomerDto) {
+    try {
+      const customer = await this.findOne(id);
+      const updatedCustomer = Object.assign(customer, changes);
+      await updatedCustomer.save();
+      return updatedCustomer;
+    } catch (error) {
+      if (error.code === 11000) {
+        throw new ForbiddenException(
+          'Error update customer: Phone number already exists',
+        );
+      }
+      throw error;
+    }
+  }
+
+  async remove(id: string) {
+    const customer = await this.findOne(id);
+    await customer.remove();
+    return 'Customer deleted successfully';
   }
 }

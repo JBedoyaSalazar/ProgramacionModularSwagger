@@ -3,42 +3,28 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { ObjectId } from 'mongodb';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 import { User } from '../entities/user.entity';
 import { Order } from '../entities/order.entity';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
 
 import { ProductsService } from '../../products/services/products.service';
-import { DatabaseService } from '../../database/database.service';
 
 @Injectable()
 export class UsersService {
-  private readonly collectionName = 'users';
   constructor(
     private productsService: ProductsService,
-    private readonly databaseService: DatabaseService,
+    @InjectModel(User.name) private userModel: Model<User>,
   ) {}
 
-  private async getCollection() {
-    const db = await this.databaseService.connect();
-    return db.collection<User>(this.collectionName);
-  }
-
   async findAll() {
-    const usersCollection = await this.getCollection();
-    return await usersCollection.find().toArray();
+    return await this.userModel.find().exec();
   }
 
   async findOne(id: string) {
-    const usersCollection = await this.getCollection();
-
-    if (!ObjectId.isValid(id)) {
-      throw new BadRequestException('Invalid ObjectId');
-    }
-
-    const objectId = new ObjectId(id);
-    const user = await usersCollection.findOne({ _id: objectId });
+    const user = await this.userModel.findById(id).exec();
 
     if (!user) {
       throw new NotFoundException(`User #${id} not found`);
@@ -47,49 +33,36 @@ export class UsersService {
   }
 
   async create(data: CreateUserDto) {
-    const usersCollection = await this.getCollection();
-
-    const user: User = {
-      ...data,
-    };
-
-    const result = await usersCollection.insertOne({
-      ...data,
-    });
-
-    return {
-      _id: result.insertedId,
-      ...data,
-    };
+    try {
+      const newUser = new this.userModel(data);
+      await newUser.save();
+      return newUser;
+    } catch (error) {
+      if (error.code === 11000) {
+        throw new BadRequestException('Error creating user');
+      }
+      throw error;
+    }
   }
 
   async update(id: string, changes: UpdateUserDto) {
-    const usersCollection = await this.getCollection();
-
-    const user = await this.findOne(id);
-
-    await usersCollection.updateOne(
-      { _id: user._id },
-      {
-        $set: changes,
-      },
-    );
-
-    return usersCollection.findOne({
-      _id: user._id,
-    });
+    try {
+      const user = await this.findOne(id);
+      const updatedUser = Object.assign(user, changes);
+      await updatedUser.save();
+      return updatedUser;
+    } catch (error) {
+      if (error.code === 11000) {
+        throw new BadRequestException('Error updating user');
+      }
+      throw error;
+    }
   }
 
   async remove(id: string) {
-    const usersCollection = await this.getCollection();
-
     const user = await this.findOne(id);
-
-    await usersCollection.deleteOne({
-      _id: user._id,
-    });
-
-    return user;
+    await user.deleteOne();
+    return { message: `User #${id} deleted successfully` };
   }
 
   async findOrdersByUser(id: string): Promise<Order> {

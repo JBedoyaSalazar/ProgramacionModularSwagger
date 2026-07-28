@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsEmail, Length } from 'class-validator';
+import { IsString, IsNotEmpty, IsEmail, Length, IsEnum } from 'class-validator';
 import { PartialType } from '@nestjs/swagger';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -27,6 +27,9 @@ export class CreateUserDto {
     example: 'admin || user',
   })
   @IsNotEmpty()
+  @IsEnum(Role, {
+    message: `role must be one of: ${Object.values(Role).join(', ')}`,
+  })
   readonly role!: Role;
 }
 

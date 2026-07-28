@@ -6,10 +6,10 @@ import {
   Body,
   Put,
   Delete,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 
+import { MongoIdPipe } from '../../common/mongo-id.pipe';
 import { BrandsService } from '../services/brands.service';
 import { CreateBrandDto, UpdateBrandDto } from '../dtos/brand.dtos';
 
@@ -26,7 +26,7 @@ export class BrandsController {
     description: 'The brands were retrieved successfully',
     type: [CreateBrandDto],
   })
-  findAll() {
+  async findAll() {
     return this.brandsService.findAll();
   }
 
@@ -38,7 +38,7 @@ export class BrandsController {
     description: 'The brand was retrieved successfully',
     type: CreateBrandDto,
   })
-  get(@Param('id', ParseIntPipe) id: number) {
+  async get(@Param('id', new MongoIdPipe()) id: string) {
     return this.brandsService.findOne(id);
   }
 
@@ -46,7 +46,7 @@ export class BrandsController {
   @ApiOperation({
     summary: 'Create a new brand',
   })
-  create(@Body() payload: CreateBrandDto) {
+  async create(@Body() payload: CreateBrandDto) {
     return this.brandsService.create(payload);
   }
 
@@ -54,8 +54,8 @@ export class BrandsController {
   @ApiOperation({
     summary: 'Update a brand by id',
   })
-  update(
-    @Param('id', ParseIntPipe) id: number,
+  async update(
+    @Param('id', new MongoIdPipe()) id: string,
     @Body() payload: UpdateBrandDto,
   ) {
     return this.brandsService.update(id, payload);
@@ -65,7 +65,7 @@ export class BrandsController {
   @ApiOperation({
     summary: 'Delete a brand by id',
   })
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.brandsService.remove(+id);
+  async remove(@Param('id', new MongoIdPipe()) id: string) {
+    return this.brandsService.remove(id);
   }
 }

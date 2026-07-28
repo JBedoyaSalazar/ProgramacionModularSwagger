@@ -14,6 +14,7 @@ import {
   ApiOkResponse,
 } from '@nestjs/swagger';
 
+import { MongoIdPipe } from '../../common/mongo-id.pipe';
 import { UsersService } from '../services/users.service';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
 import { Order } from '../entities/order.entity';
@@ -48,7 +49,7 @@ export class UsersController {
     description: 'The user was retrieved successfully',
     type: CreateUserDto,
   })
-  get(@Param('id') id: string) {
+  get(@Param('id', new MongoIdPipe()) id: string) {
     return this.usersService.findOne(id);
   }
 
@@ -65,7 +66,7 @@ export class UsersController {
     description: 'The orders were retrieved successfully',
     type: [Order],
   })
-  getOrders(@Param('id') id: string) {
+  getOrders(@Param('id', new MongoIdPipe()) id: string) {
     return this.usersService.findOrdersByUser(id);
   }
 
@@ -94,7 +95,10 @@ export class UsersController {
     description: 'The user was updated successfully',
     type: UpdateUserDto,
   })
-  update(@Param('id') id: string, @Body() payload: UpdateUserDto) {
+  update(
+    @Param('id', new MongoIdPipe()) id: string,
+    @Body() payload: UpdateUserDto,
+  ) {
     return this.usersService.update(id, payload);
   }
 
@@ -110,7 +114,7 @@ export class UsersController {
   @ApiOkResponse({
     description: 'The user was deleted successfully',
   })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', new MongoIdPipe()) id: string) {
     return this.usersService.remove(id);
   }
 }

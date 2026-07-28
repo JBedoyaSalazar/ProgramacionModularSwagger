@@ -6,10 +6,10 @@ import {
   Body,
   Put,
   Delete,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 
+import { MongoIdPipe } from '../../common/mongo-id.pipe';
 import { CustomersService } from '../services/customers.service';
 import { CreateCustomerDto, UpdateCustomerDto } from '../dtos/customer.dto';
 
@@ -38,7 +38,7 @@ export class CustomerController {
     description: 'The customer was retrieved successfully',
     type: CreateCustomerDto,
   })
-  get(@Param('id', ParseIntPipe) id: number) {
+  get(@Param('id', new MongoIdPipe()) id: string) {
     return this.customersService.findOne(id);
   }
 
@@ -59,7 +59,7 @@ export class CustomerController {
     type: UpdateCustomerDto,
   })
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', new MongoIdPipe()) id: string,
     @Body() payload: UpdateCustomerDto,
   ) {
     return this.customersService.update(id, payload);
@@ -69,7 +69,7 @@ export class CustomerController {
   @ApiOperation({
     summary: 'Delete a customer by id',
   })
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.customersService.remove(+id);
+  remove(@Param('id', new MongoIdPipe()) id: string) {
+    return this.customersService.remove(id);
   }
 }
