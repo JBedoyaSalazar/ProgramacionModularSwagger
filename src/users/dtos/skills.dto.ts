@@ -1,5 +1,5 @@
 import { IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 
 export class SkillDto {
   @ApiProperty({
@@ -16,3 +16,5 @@ export class SkillDto {
   @IsString()
   level: string;
 }
+
+export class UpdateSkillDto extends PartialType(SkillDto) {}

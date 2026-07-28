@@ -1,7 +1,7 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
-import { Skill } from '../interface/skills.interface';
+import { SubDoc, SubDocSchema } from './sub-doc.entitiy';
 
 @Schema({
   versionKey: false,
@@ -16,15 +16,10 @@ export class Customer extends Document {
   phone!: string;
 
   @Prop({
-    type: [
-      {
-        name: { type: String },
-        level: { type: String },
-      },
-    ],
+    type: [SubDocSchema],
     default: [],
   })
-  skills: Types.Array<Skill>;
+  skills: Types.Array<SubDoc>;
 }
 
 export const CustomerSchema = SchemaFactory.createForClass(Customer);
