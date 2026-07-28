@@ -8,11 +8,16 @@ import {
   Delete,
   HttpStatus,
   HttpCode,
+  Query,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 
 import { MongoIdPipe } from '../../common/mongo-id.pipe';
-import { CreateProductDto, UpdateProductDto } from '../dtos/products.dtos';
+import {
+  CreateProductDto,
+  UpdateProductDto,
+  FilterProductsDto,
+} from '../dtos/products.dtos';
 import { ProductsService } from '../services/products.service';
 
 @ApiTags('products')
@@ -28,9 +33,8 @@ export class ProductsController {
     description: 'The products were retrieved successfully',
     type: [CreateProductDto],
   })
-  async getProducts() {
-    console.log('ProductsController ejecutandose');
-    return await this.productsService.findAll();
+  async getProducts(@Query() params: FilterProductsDto) {
+    return await this.productsService.findAll(params);
   }
 
   @Get(':productId')
