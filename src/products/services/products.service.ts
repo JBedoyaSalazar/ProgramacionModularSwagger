@@ -38,16 +38,20 @@ export class ProductsService {
       }
       return await this.productModel
         .find(filter)
+        .populate('brand')
         .skip(offset)
         .limit(limit)
         .exec();
     }
-    const products = await this.productModel.find().exec();
+    const products = await this.productModel.find().populate('brand').exec();
     return products;
   }
 
   async findOne(id: string) {
-    const product = await this.productModel.findById(id).exec();
+    const product = await this.productModel
+      .findById(id)
+      .populate('brand')
+      .exec();
     if (!product) {
       throw new NotFoundException(`Product #${id} not found`);
     }

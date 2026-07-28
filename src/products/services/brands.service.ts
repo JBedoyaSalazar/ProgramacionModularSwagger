@@ -22,16 +22,32 @@ export class BrandsService {
   }
 
   async create(data: CreateBrandDto) {
-    const newBrand = await new this.brandModel(data);
-    await newBrand.save();
-    return newBrand;
+    try {
+      const newBrand = await new this.brandModel(data);
+      await newBrand.save();
+      return newBrand;
+    } catch (error) {
+      if (error.code === 11000) {
+        throw new NotFoundException(
+          `Brand with name ${data.name} already exists`,
+        );
+      }
+    }
   }
 
   async update(id: string, changes: UpdateBrandDto) {
-    const brand = await this.findOne(id);
-    const updatedBrand = Object.assign(brand, changes);
-    await updatedBrand.save();
-    return updatedBrand;
+    try {
+      const brand = await this.findOne(id);
+      const updatedBrand = Object.assign(brand, changes);
+      await updatedBrand.save();
+      return updatedBrand;
+    } catch (error) {
+      if (error.code === 11000) {
+        throw new NotFoundException(
+          `Brand with name ${changes.name} already exists`,
+        );
+      }
+    }
   }
 
   async remove(id: string) {

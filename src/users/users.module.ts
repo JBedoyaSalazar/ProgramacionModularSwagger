@@ -8,6 +8,7 @@ import { UsersService } from './services/users.service';
 
 import { CustomerSchema, Customer } from './entities/customer.entity';
 import { UserSchema, User } from './entities/user.entity';
+import { OrderSchema, Order } from './entities/order.entity';
 
 import { ProductsModule } from '../products/products.module';
 
@@ -17,7 +18,7 @@ import { ProductsModule } from '../products/products.module';
     MongooseModule.forFeature([
       { name: Customer.name, schema: CustomerSchema },
       { name: User.name, schema: UserSchema },
-      // {}
+      { name: Order.name, schema: OrderSchema },
     ]),
   ],
   controllers: [CustomerController, UsersController],

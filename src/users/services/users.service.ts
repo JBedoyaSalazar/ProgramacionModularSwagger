@@ -11,11 +11,13 @@ import { Order } from '../entities/order.entity';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
 
 import { ProductsService } from '../../products/services/products.service';
+import { CustomersService } from './customers.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private productsService: ProductsService,
+    private customerService: CustomersService,
     @InjectModel(User.name) private userModel: Model<User>,
   ) {}
 
@@ -65,11 +67,12 @@ export class UsersService {
     return { message: `User #${id} deleted successfully` };
   }
 
-  async findOrdersByUser(id: string): Promise<Order> {
+  async findOrdersByUser(id: string) {
+    const customer = await this.customerService.findOne(id);
     return {
       date: new Date(),
-      user: await this.findOne(id),
-      products: await this.productsService.findAll(),
+      customer,
+      products: this.productsService.findAll(),
     };
   }
 }

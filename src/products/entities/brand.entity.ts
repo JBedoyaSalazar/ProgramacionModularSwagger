@@ -6,7 +6,7 @@ import { Document } from 'mongoose';
   timestamps: true,
 })
 export class Brand extends Document {
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   name: string;
 
   @Prop({ required: true })
