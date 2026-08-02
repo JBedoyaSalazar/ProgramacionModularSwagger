@@ -66,11 +66,11 @@ export class UsersService {
     return true;
   }
 
-  findOrdersByUser(id: number): Order {
+  async findOrdersByUser(id: number): Promise<Order> {
     return {
       date: new Date(),
       user: this.findOne(id),
-      products: this.productsService.findAll(),
+      products: await this.productsService.findAll(),
     };
   }
 }

@@ -59,32 +59,32 @@ export class ProductsController {
     return this.productsService.findOne(productId);
   }
 
-  @Post()
-  @ApiOperation({
-    summary: 'Create a new product',
-  })
-  @HttpCode(HttpStatus.CREATED)
-  create(@Body() payload: CreateProductDto) {
-    // return {
-    //   message: 'accion de crear',
-    //   payload,
-    // };
-    return this.productsService.create(payload);
-  }
+  // @Post()
+  // @ApiOperation({
+  //   summary: 'Create a new product',
+  // })
+  // @HttpCode(HttpStatus.CREATED)
+  // create(@Body() payload: CreateProductDto) {
+  //   // return {
+  //   //   message: 'accion de crear',
+  //   //   payload,
+  //   // };
+  //   return this.productsService.create(payload);
+  // }
 
-  @Put(':id')
-  @ApiOperation({
-    summary: 'Update a product by id',
-  })
-  update(@Param('id') id: string, @Body() payload: UpdateProductDto) {
-    return this.productsService.update(+id, payload);
-  }
+  // @Put(':id')
+  // @ApiOperation({
+  //   summary: 'Update a product by id',
+  // })
+  // update(@Param('id') id: string, @Body() payload: UpdateProductDto) {
+  //   return this.productsService.update(+id, payload);
+  // }
 
-  @Delete(':id')
-  @ApiOperation({
-    summary: 'Delete a product by id',
-  })
-  delete(@Param('id') id: string) {
-    return this.productsService.remove(+id);
-  }
+  // @Delete(':id')
+  // @ApiOperation({
+  //   summary: 'Delete a product by id',
+  // })
+  // delete(@Param('id') id: string) {
+  //   return this.productsService.remove(+id);
+  // }
 }
