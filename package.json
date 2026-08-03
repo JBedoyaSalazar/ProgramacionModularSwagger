@@ -22,8 +22,11 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "migrations:generate": "npm run typeorm -- migration:generate -n",
+    "migrations:create": "npm run typeorm -- migration:create -n",
+    "migrations:show": "npm run typeorm -- migration:show",
     "migrations:run": "npm run typeorm -- migration:run",
-    "migrations:revert": "npm run typeorm -- migration:revert"
+    "migrations:revert": "npm run typeorm -- migration:revert",
+    "migrations:drop": "npm run typeorm -- migration:drop"
   },
   "dependencies": {
     "@nestjs/common": "7.6.13",
