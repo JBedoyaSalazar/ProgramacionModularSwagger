@@ -4,7 +4,11 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
+
+import { Customer } from './customer.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -33,4 +37,11 @@ export class User {
     default: () => 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
+
+  @OneToOne(() => Customer, (customer) => customer.user, {
+    cascade: true,
+    nullable: true,
+  })
+  @JoinColumn({ name: 'customer_id' })
+  customer!: Customer;
 }
