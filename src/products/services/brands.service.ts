@@ -20,7 +20,10 @@ export class BrandsService {
   }
 
   async findOne(id: number) {
-    const product = await this.brandRepository.findOne({ where: { id } });
+    const product = await this.brandRepository.findOne({
+      where: { id },
+      relations: ['products'],
+    });
     if (!product) {
       throw new NotFoundException(`Brand #${id} not found`);
     }

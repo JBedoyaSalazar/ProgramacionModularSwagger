@@ -8,8 +8,6 @@ import {
 import { PartialType } from '@nestjs/swagger';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Brand } from '../entities/brand.entity';
-
 export class CreateProductDto {
   @ApiProperty({
     description: 'The name of the product',
@@ -58,7 +56,10 @@ export class CreateProductDto {
     description: 'The brand of the product',
     example: { id: 1, name: 'Nike', image: 'https://example.com/nike.jpg' },
   })
-  readonly brand: Brand;
+  @IsNotEmpty()
+  @IsNumber()
+  @IsPositive()
+  readonly brandId: number;
 }
 
 export class UpdateProductDto extends PartialType(CreateProductDto) {}
