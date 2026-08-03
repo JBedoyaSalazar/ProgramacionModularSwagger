@@ -1,5 +1,11 @@
-import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config'; //Agrega la clase ConfigService para poder usar las variables de entorno
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 import { User } from '../entities/user.entity';
 import { Order } from '../entities/order.entity';
@@ -10,66 +16,65 @@ import { ProductsService } from '../../products/services/products.service';
 @Injectable()
 export class UsersService {
   constructor(
+    @InjectRepository(User) private userRepo: Repository<User>,
     private productsService: ProductsService,
     private configService: ConfigService,
   ) {}
 
-  private counterId = 1;
-  private users: User[] = [
-    {
-      id: 1,
-      email: 'correo@mail.com',
-      password: '12345',
-      role: 'admin',
-    },
-  ];
-
-  findAll() {
-    console.log('API_KEY: ', this.configService.get('API_KEY'));
-    return this.users;
+  async findAll() {
+    return await this.userRepo.find();
   }
 
-  findOne(id: number) {
-    const user = this.users.find((item) => item.id === id);
+  async findOne(id: number) {
+    const user = await this.userRepo.findOne({ where: { id } });
     if (!user) {
       throw new NotFoundException(`User #${id} not found`);
     }
     return user;
   }
 
-  create(data: CreateUserDto) {
-    this.counterId = this.counterId + 1;
-    const newUser = {
-      id: this.counterId,
-      ...data,
-    };
-    this.users.push(newUser);
-    return newUser;
-  }
+  async create(data: CreateUserDto) {
+    try {
+      const newUser = this.userRepo.create(data);
+      await this.userRepo.save(newUser);
 
-  update(id: number, changes: UpdateUserDto) {
-    const user = this.findOne(id);
-    const index = this.users.findIndex((item) => item.id === id);
-    this.users[index] = {
-      ...user,
-      ...changes,
-    };
-    return this.users[index];
-  }
-
-  remove(id: number) {
-    const index = this.users.findIndex((item) => item.id === id);
-    if (index === -1) {
-      throw new NotFoundException(`User #${id} not found`);
+      return this.findOne(newUser.id);
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new ConflictException(
+          `The phone number '${data.email}' is already registered.`,
+        );
+      }
+      throw error;
     }
-    this.users.splice(index, 1);
-    return true;
+  }
+
+  async update(id: number, changes: UpdateUserDto) {
+    try {
+      const user = await this.findOne(id);
+      await this.userRepo.merge(user, changes);
+      await this.userRepo.save(user);
+      return this.findOne(id);
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new ConflictException(
+          `The phone number '${changes.email}' is already registered.`,
+        );
+      }
+      throw error;
+    }
+  }
+
+  async remove(id: number) {
+    const user = await this.findOne(id);
+    await this.userRepo.remove(user);
+    return `User #${id} has been deleted`;
   }
 
   async findOrdersByUser(id: number): Promise<Order> {
     return {
       date: new Date(),
-      user: this.findOne(id),
+      user: await this.findOne(id),
       products: await this.productsService.findAll(),
     };
   }
