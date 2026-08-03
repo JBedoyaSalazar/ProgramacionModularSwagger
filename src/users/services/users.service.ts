@@ -12,6 +12,7 @@ import { Order } from '../entities/order.entity';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
 
 import { ProductsService } from '../../products/services/products.service';
+import { CustomersService } from '../services/customers.service';
 
 @Injectable()
 export class UsersService {
@@ -19,14 +20,20 @@ export class UsersService {
     @InjectRepository(User) private userRepo: Repository<User>,
     private productsService: ProductsService,
     private configService: ConfigService,
+    private customersService: CustomersService,
   ) {}
 
   async findAll() {
-    return await this.userRepo.find();
+    return await this.userRepo.find({
+      relations: ['customer'],
+    });
   }
 
   async findOne(id: number) {
-    const user = await this.userRepo.findOne({ where: { id } });
+    const user = await this.userRepo.findOne({
+      where: { id },
+      relations: ['customer'],
+    });
     if (!user) {
       throw new NotFoundException(`User #${id} not found`);
     }
@@ -36,6 +43,10 @@ export class UsersService {
   async create(data: CreateUserDto) {
     try {
       const newUser = this.userRepo.create(data);
+      if (data.customerId) {
+        const customer = await this.customersService.findOne(data.customerId);
+        newUser.customer = customer;
+      }
       await this.userRepo.save(newUser);
 
       return this.findOne(newUser.id);
@@ -52,6 +63,12 @@ export class UsersService {
   async update(id: number, changes: UpdateUserDto) {
     try {
       const user = await this.findOne(id);
+      if (changes.customerId) {
+        const customer = await this.customersService.findOne(
+          changes.customerId,
+        );
+        user.customer = customer;
+      }
       await this.userRepo.merge(user, changes);
       await this.userRepo.save(user);
       return this.findOne(id);

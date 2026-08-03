@@ -1,4 +1,12 @@
-import { IsString, IsNotEmpty, IsEmail, Length, IsEnum } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsEmail,
+  Length,
+  IsEnum,
+  IsPositive,
+  IsOptional,
+} from 'class-validator';
 import { PartialType } from '@nestjs/swagger';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -31,6 +39,14 @@ export class CreateUserDto {
     message: `role must be one of: ${Object.values(Role).join(', ')}`,
   })
   readonly role!: Role;
+
+  @ApiProperty({
+    description: 'The customer ID of the user',
+    example: 1,
+  })
+  @IsOptional()
+  @IsPositive()
+  readonly customerId!: number;
 }
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {}
