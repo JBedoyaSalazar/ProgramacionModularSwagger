@@ -88,11 +88,10 @@ export class UsersService {
     return `User #${id} has been deleted`;
   }
 
-  async findOrdersByUser(id: number): Promise<Order> {
-    return {
-      date: new Date(),
-      user: await this.findOne(id),
-      products: await this.productsService.findAll(),
-    };
-  }
+  // async findOrdersByUser(id: number): Promise<Order> {
+  //   // return {
+  //   //   user: await this.findOne(id),
+  //   //   products: await this.productsService.findAll(),
+  //   // };
+  // }
 }

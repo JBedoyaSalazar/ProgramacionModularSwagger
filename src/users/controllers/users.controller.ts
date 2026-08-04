@@ -53,22 +53,22 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
-  @Get(':id/orders')
-  @ApiOperation({
-    summary: 'Get orders by user id',
-  })
-  @ApiParam({
-    name: 'id',
-    description: 'The id of the user',
-    example: 1,
-  })
-  @ApiOkResponse({
-    description: 'The orders were retrieved successfully',
-    type: [Order],
-  })
-  getOrders(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.findOrdersByUser(id);
-  }
+  // @Get(':id/orders')
+  // @ApiOperation({
+  //   summary: 'Get orders by user id',
+  // })
+  // @ApiParam({
+  //   name: 'id',
+  //   description: 'The id of the user',
+  //   example: 1,
+  // })
+  // @ApiOkResponse({
+  //   description: 'The orders were retrieved successfully',
+  //   type: [Order],
+  // })
+  // getOrders(@Param('id', ParseIntPipe) id: number) {
+  //   return this.usersService.findOrdersByUser(id);
+  // }
 
   @Post()
   @ApiOperation({
