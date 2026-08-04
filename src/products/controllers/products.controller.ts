@@ -53,6 +53,21 @@ export class ProductsController {
     return this.productsService.create(payload);
   }
 
+  @Post(':productId/categories/:categoryId')
+  @ApiOperation({
+    summary: 'Add a category to a product',
+  })
+  @ApiOkResponse({
+    description: 'The category was added to the product successfully',
+    type: CreateProductDto,
+  })
+  addCategoryToProduct(
+    @Param('productId', ParseIntPipe) productId: number,
+    @Param('categoryId', ParseIntPipe) categoryId: number,
+  ) {
+    return this.productsService.addCategoryToProduct(productId, categoryId);
+  }
+
   @Put(':id')
   @ApiOperation({
     summary: 'Update a product by id',
@@ -70,5 +85,19 @@ export class ProductsController {
   })
   delete(@Param('id', ParseIntPipe) id: number) {
     return this.productsService.remove(id);
+  }
+
+  @Delete(':productId/categories/:categoryId')
+  @ApiOperation({
+    summary: 'Remove a category from a product',
+  })
+  removeCategoryFromProduct(
+    @Param('productId', ParseIntPipe) productId: number,
+    @Param('categoryId', ParseIntPipe) categoryId: number,
+  ) {
+    return this.productsService.removeCategoryFromProduct(
+      productId,
+      categoryId,
+    );
   }
 }

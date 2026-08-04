@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -56,13 +61,61 @@ export class ProductsService {
       product.brand = brand;
     }
 
-    if (payload.categoryIds && payload.categoryIds.length > 0) {
+    if (payload.categoryIds) {
       const categories = await this.categoryRepo.findByIds(payload.categoryIds);
       product.categories = categories;
     }
     await this.productRepo.merge(product, payload);
     await this.productRepo.save(product);
     return this.findOne(id);
+  }
+
+  async removeCategoryFromProduct(productId: number, categoryId: number) {
+    const product = await this.findOne(productId);
+
+    const category = await this.categoryRepo.findOne({
+      where: { id: categoryId },
+    });
+    if (!category) {
+      throw new NotFoundException(`Category #${categoryId} not found`);
+    }
+
+    const hasCategory = product.categories.some((cat) => cat.id === categoryId);
+    if (!hasCategory) {
+      throw new BadRequestException(
+        `Category #${categoryId} is not associated with Product #${productId}`,
+      );
+    }
+
+    product.categories = product.categories.filter(
+      (cat) => cat.id !== categoryId,
+    );
+    await this.productRepo.save(product);
+    return this.findOne(productId);
+  }
+
+  async addCategoryToProduct(productId: number, categoryId: number) {
+    const product = await this.findOne(productId);
+
+    const category = await this.categoryRepo.findOne({
+      where: { id: categoryId },
+    });
+    if (!category) {
+      throw new NotFoundException(`Category #${categoryId} not found`);
+    }
+
+    const alreadyAssigned = product.categories.some(
+      (cat) => cat.id === categoryId,
+    );
+    if (alreadyAssigned) {
+      throw new ConflictException(
+        `Category #${categoryId} is already assigned to product #${productId}`,
+      );
+    }
+
+    product.categories.push(category);
+    await this.productRepo.save(product);
+    return this.findOne(productId);
   }
 
   async remove(id: number) {
