@@ -5,25 +5,28 @@ import { Repository } from 'typeorm';
 import { Product } from '../entities/product.entity';
 import { CreateProductDto, UpdateProductDto } from '../dtos/products.dtos';
 
+import { Category } from '../entities/category.entity';
 import { BrandsService } from '../services/brands.service';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectRepository(Product) private productRepo: Repository<Product>,
+    @InjectRepository(Category) private categoryRepo: Repository<Category>,
+    // private categoriesService: CategoriesService,
     private brandsService: BrandsService,
   ) {}
 
   async findAll() {
     return this.productRepo.find({
-      relations: ['brand'],
+      relations: ['brand', 'categories'],
     });
   }
 
   async findOne(id: number) {
     const product = await this.productRepo.findOne({
       where: { id },
-      relations: ['brand'],
+      relations: ['brand', 'categories'],
     });
     if (!product) {
       throw new NotFoundException(`Product #${id} not found`);
@@ -38,6 +41,10 @@ export class ProductsService {
       const brand = await this.brandsService.findOne(payload.brandId);
       newProduct.brand = brand;
     }
+    if (payload.categoryIds && payload.categoryIds.length > 0) {
+      const categories = await this.categoryRepo.findByIds(payload.categoryIds);
+      newProduct.categories = categories;
+    }
     await this.productRepo.save(newProduct);
     return this.findOne(newProduct.id);
   }
@@ -47,6 +54,11 @@ export class ProductsService {
     if (payload.brandId) {
       const brand = await this.brandsService.findOne(payload.brandId);
       product.brand = brand;
+    }
+
+    if (payload.categoryIds && payload.categoryIds.length > 0) {
+      const categories = await this.categoryRepo.findByIds(payload.categoryIds);
+      product.categories = categories;
     }
     await this.productRepo.merge(product, payload);
     await this.productRepo.save(product);
