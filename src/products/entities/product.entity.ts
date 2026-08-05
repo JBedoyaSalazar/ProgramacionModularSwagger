@@ -9,6 +9,7 @@ import {
   ManyToMany,
   JoinTable,
   OneToMany,
+  Index,
 } from 'typeorm';
 
 import { Brand } from './brand.entity';
@@ -26,6 +27,7 @@ export class Product {
   @Column({ type: 'text' })
   description: string;
 
+  @Index()
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   price: number;
 
