@@ -5,7 +5,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import {
+  Between,
+  FindConditions,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
 
 import { Product } from '../entities/product.entity';
 import {
@@ -26,11 +32,44 @@ export class ProductsService {
     private brandsService: BrandsService,
   ) {}
 
+  private buildFilters(params: FilterProductsDto): FindConditions<Product> {
+    if (
+      params.minPrice !== undefined &&
+      params.maxPrice !== undefined &&
+      params.maxPrice < params.minPrice
+    ) {
+      throw new BadRequestException(
+        'maxPrice must be greater than or equal to minPrice.',
+      );
+    }
+
+    const where: FindConditions<Product> = {};
+
+    if (params.minPrice !== undefined && params.maxPrice !== undefined) {
+      where.price = Between(params.minPrice, params.maxPrice);
+    } else if (params.minPrice !== undefined) {
+      where.price = MoreThanOrEqual(params.minPrice);
+    } else if (params.maxPrice !== undefined) {
+      where.price = LessThanOrEqual(params.maxPrice);
+    }
+
+    if (params.brand) {
+      where.brand = {
+        name: params.brand,
+      };
+    }
+
+    return where;
+  }
+
   async findAll(params: FilterProductsDto) {
     const limit = params.limit ?? 20;
     const offset = params.offset ?? 0;
 
+    const where = this.buildFilters(params);
+
     return this.productRepo.find({
+      where,
       relations: ['brand', 'categories'],
       take: limit,
       skip: offset,
