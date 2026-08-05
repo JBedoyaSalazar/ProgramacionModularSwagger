@@ -1,7 +1,7 @@
 import {
   Controller,
   Get,
-  // Query,
+  Query,
   Param,
   Post,
   Body,
@@ -12,7 +12,11 @@ import {
 import { ParseIntPipe } from '../../common/parse-int.pipe';
 import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 
-import { CreateProductDto, UpdateProductDto } from '../dtos/products.dtos';
+import {
+  CreateProductDto,
+  UpdateProductDto,
+  FilterProductsDto,
+} from '../dtos/products.dtos';
 import { ProductsService } from '../services/products.service';
 
 @ApiTags('products')
@@ -28,9 +32,8 @@ export class ProductsController {
     description: 'The products were retrieved successfully',
     type: [CreateProductDto],
   })
-  getProducts() {
-    // @Query('brand') brand: string, // @Query('offset') offset = 0, // @Query('limit') limit = 100,
-    return this.productsService.findAll();
+  getProducts(@Query() params: FilterProductsDto) {
+    return this.productsService.findAll(params);
   }
 
   @Get(':productId')
