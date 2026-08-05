@@ -7,6 +7,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
 
 import { Product } from '../../products/entities/product.entity';
 import { Order } from './order.entity';
@@ -16,6 +17,7 @@ export class OrderProduct {
   @PrimaryGeneratedColumn()
   id!: number;
 
+  @Exclude()
   @CreateDateColumn({
     name: 'created_at',
     type: 'timestamptz',
@@ -23,6 +25,7 @@ export class OrderProduct {
   })
   createdAt: Date;
 
+  @Exclude()
   @UpdateDateColumn({
     name: 'updated_at',
     type: 'timestamptz',
