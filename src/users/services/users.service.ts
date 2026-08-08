@@ -6,6 +6,7 @@ import {
 import { ConfigService } from '@nestjs/config'; //Agrega la clase ConfigService para poder usar las variables de entorno
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 
 import { User } from '../entities/user.entity';
 import { Order } from '../entities/order.entity';
@@ -40,9 +41,23 @@ export class UsersService {
     return user;
   }
 
+  async findByEmail(email: string) {
+    const user = await this.userRepo.findOne({
+      where: { email },
+    });
+    if (!user) {
+      throw new NotFoundException(`User with email ${email} not found`);
+    }
+    return user;
+  }
+
   async create(data: CreateUserDto) {
     try {
       const newUser = this.userRepo.create(data);
+
+      const hashedPassword = await bcrypt.hash(newUser.password, 10);
+      newUser.password = hashedPassword;
+
       if (data.customerId) {
         const customer = await this.customersService.findOne(data.customerId);
         newUser.customer = customer;
@@ -52,9 +67,15 @@ export class UsersService {
       return this.findOne(newUser.id);
     } catch (error) {
       if (error.code === '23505') {
-        throw new ConflictException(
-          `The phone number '${data.email}' is already registered.`,
-        );
+        console.log(`The email '${data.email}' is already registered.`, error);
+
+        if (error.constraint === 'UQ_c7bc1ffb56c570f42053fa7503b') {
+          throw new ConflictException(
+            `Customer #${data.customerId} is already associated with a user.`,
+          );
+        }
+
+        throw new ConflictException('A unique constraint was violated.');
       }
       throw error;
     }
