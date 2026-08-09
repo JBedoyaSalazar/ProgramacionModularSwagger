@@ -7,8 +7,9 @@ import {
   Body,
   Put,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
-// import { Response } from 'express';
+import { AuthGuard } from '@nestjs/passport';
 import { ParseIntPipe } from '../../common/parse-int.pipe';
 import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 
@@ -20,6 +21,7 @@ import {
 import { ProductsService } from '../services/products.service';
 
 @ApiTags('products')
+@UseGuards(AuthGuard('jwt'))
 @Controller('products')
 export class ProductsController {
   constructor(private productsService: ProductsService) {}

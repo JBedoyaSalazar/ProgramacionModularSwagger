@@ -88,18 +88,27 @@ export class ProductsService {
   }
 
   async create(payload: CreateProductDto) {
-    const newProduct = await this.productRepo.create(payload);
+    try {
+      const newProduct = await this.productRepo.create(payload);
 
-    if (payload.brandId) {
-      const brand = await this.brandsService.findOne(payload.brandId);
-      newProduct.brand = brand;
+      if (payload.brandId) {
+        const brand = await this.brandsService.findOne(payload.brandId);
+        newProduct.brand = brand;
+      }
+      if (payload.categoryIds && payload.categoryIds.length > 0) {
+        const categories = await this.categoryRepo.findByIds(
+          payload.categoryIds,
+        );
+        newProduct.categories = categories;
+      }
+      await this.productRepo.save(newProduct);
+      return this.findOne(newProduct.id);
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new ConflictException('Product already exists');
+      }
+      throw new BadRequestException(error.message);
     }
-    if (payload.categoryIds && payload.categoryIds.length > 0) {
-      const categories = await this.categoryRepo.findByIds(payload.categoryIds);
-      newProduct.categories = categories;
-    }
-    await this.productRepo.save(newProduct);
-    return this.findOne(newProduct.id);
   }
 
   async update(id: number, payload: UpdateProductDto) {
@@ -113,8 +122,15 @@ export class ProductsService {
       const categories = await this.categoryRepo.findByIds(payload.categoryIds);
       product.categories = categories;
     }
-    await this.productRepo.merge(product, payload);
-    await this.productRepo.save(product);
+    try {
+      await this.productRepo.merge(product, payload);
+      await this.productRepo.save(product);
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new ConflictException('Product already exists');
+      }
+      throw new BadRequestException(error.message);
+    }
     return this.findOne(id);
   }
 
