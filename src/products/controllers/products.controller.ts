@@ -9,7 +9,6 @@ import {
   Delete,
   UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { ParseIntPipe } from '../../common/parse-int.pipe';
 import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 
@@ -19,9 +18,11 @@ import {
   FilterProductsDto,
 } from '../dtos/products.dtos';
 import { ProductsService } from '../services/products.service';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { Public } from '../../auth/decorators/public.decorators';
 
 @ApiTags('products')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(JwtAuthGuard)
 @Controller('products')
 export class ProductsController {
   constructor(private productsService: ProductsService) {}
@@ -34,6 +35,7 @@ export class ProductsController {
     description: 'The products were retrieved successfully',
     type: [CreateProductDto],
   })
+  @Public()
   getProducts(@Query() params: FilterProductsDto) {
     return this.productsService.findAll(params);
   }
@@ -46,6 +48,7 @@ export class ProductsController {
     description: 'The product was retrieved successfully',
     type: CreateProductDto,
   })
+  @Public()
   getOne(@Param('productId', ParseIntPipe) productId: number) {
     return this.productsService.findOne(productId);
   }

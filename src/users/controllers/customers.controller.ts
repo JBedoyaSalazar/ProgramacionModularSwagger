@@ -7,13 +7,17 @@ import {
   Put,
   Delete,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 
 import { CustomersService } from '../services/customers.service';
 import { CreateCustomerDto, UpdateCustomerDto } from '../dtos/customer.dto';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { Public } from '../../auth/decorators/public.decorators';
 
 @ApiTags('customers')
+@UseGuards(JwtAuthGuard)
 @Controller('customers')
 export class CustomerController {
   constructor(private customersService: CustomersService) {}
@@ -26,6 +30,7 @@ export class CustomerController {
     description: 'The customers were retrieved successfully',
     type: [CreateCustomerDto],
   })
+  @Public()
   findAll() {
     return this.customersService.findAll();
   }
@@ -38,6 +43,7 @@ export class CustomerController {
     description: 'The customer was retrieved successfully',
     type: CreateCustomerDto,
   })
+  @Public()
   get(@Param('id', ParseIntPipe) id: number) {
     return this.customersService.findOne(id);
   }

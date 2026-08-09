@@ -6,14 +6,18 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 
 import { ParseIntPipe } from '../../common/parse-int.pipe';
 import { CategoriesService } from '../services/categories.service';
 import { CreateCategoryDto } from '../dtos/category.dtos';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { Public } from '../../auth/decorators/public.decorators';
 
 @ApiTags('categories')
+@UseGuards(JwtAuthGuard)
 @Controller('categories')
 export class CategoriesController {
   constructor(private categoriesService: CategoriesService) {}
@@ -25,6 +29,7 @@ export class CategoriesController {
     description: 'The categories were retrieved successfully',
     type: String,
   })
+  @Public()
   getCategories() {
     return this.categoriesService.findAll();
   }
@@ -37,6 +42,7 @@ export class CategoriesController {
     description: 'The category was retrieved successfully',
     type: String,
   })
+  @Public()
   getCategory(@Param('id', ParseIntPipe) id: number) {
     return this.categoriesService.findOne(id);
   }

@@ -7,13 +7,17 @@ import {
   Put,
   Delete,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 
 import { BrandsService } from '../services/brands.service';
 import { CreateBrandDto, UpdateBrandDto } from '../dtos/brand.dtos';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { Public } from '../../auth/decorators/public.decorators';
 
 @ApiTags('brands')
+@UseGuards(JwtAuthGuard)
 @Controller('brands')
 export class BrandsController {
   constructor(private brandsService: BrandsService) {}
@@ -26,6 +30,7 @@ export class BrandsController {
     description: 'The brands were retrieved successfully',
     type: [CreateBrandDto],
   })
+  @Public()
   findAll() {
     return this.brandsService.findAll();
   }
@@ -38,6 +43,7 @@ export class BrandsController {
     description: 'The brand was retrieved successfully',
     type: CreateBrandDto,
   })
+  @Public()
   get(@Param('id', ParseIntPipe) id: number) {
     return this.brandsService.findOne(id);
   }

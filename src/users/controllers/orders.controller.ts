@@ -7,13 +7,17 @@ import {
   Body,
   Put,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 
 import { OrdersService } from '../services/orders.service';
 import { CreateOrderDto, UpdateOrderDto } from '../dtos/order.dto';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { Public } from '../../auth/decorators/public.decorators';
 
 @ApiTags('orders')
+@UseGuards(JwtAuthGuard)
 @Controller('orders')
 export class OrdersController {
   constructor(private ordersService: OrdersService) {}
@@ -26,6 +30,7 @@ export class OrdersController {
     description: 'The orders were retrieved successfully',
     type: [CreateOrderDto],
   })
+  @Public()
   findAll() {
     return this.ordersService.findAll();
   }
@@ -38,6 +43,7 @@ export class OrdersController {
     description: 'The order was retrieved successfully',
     type: CreateOrderDto,
   })
+  @Public()
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.ordersService.findOne(id);
   }

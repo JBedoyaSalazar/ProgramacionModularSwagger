@@ -7,6 +7,7 @@ import {
   Put,
   Delete,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -17,9 +18,11 @@ import {
 
 import { UsersService } from '../services/users.service';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
-import { Order } from '../entities/order.entity';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { Public } from '../../auth/decorators/public.decorators';
 
 @ApiTags('users')
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
@@ -32,6 +35,7 @@ export class UsersController {
     description: 'The users were retrieved successfully',
     type: [CreateUserDto],
   })
+  @Public()
   findAll() {
     return this.usersService.findAll();
   }
@@ -49,26 +53,10 @@ export class UsersController {
     description: 'The user was retrieved successfully',
     type: CreateUserDto,
   })
+  @Public()
   get(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findOne(id);
   }
-
-  // @Get(':id/orders')
-  // @ApiOperation({
-  //   summary: 'Get orders by user id',
-  // })
-  // @ApiParam({
-  //   name: 'id',
-  //   description: 'The id of the user',
-  //   example: 1,
-  // })
-  // @ApiOkResponse({
-  //   description: 'The orders were retrieved successfully',
-  //   type: [Order],
-  // })
-  // getOrders(@Param('id', ParseIntPipe) id: number) {
-  //   return this.usersService.findOrdersByUser(id);
-  // }
 
   @Post()
   @ApiOperation({

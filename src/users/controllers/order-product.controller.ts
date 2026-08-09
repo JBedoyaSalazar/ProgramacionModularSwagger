@@ -6,6 +6,7 @@ import {
   Param,
   ParseIntPipe,
   Get,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 
@@ -14,8 +15,11 @@ import {
   CreateOrderProductDto,
   UpdateOrderProductDto,
 } from '../dtos/orderProduct.dto';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { Public } from '../../auth/decorators/public.decorators';
 
 @ApiTags('orderProduct')
+@UseGuards(JwtAuthGuard)
 @Controller('order-product')
 export class OrderProductController {
   constructor(private orderProductService: OrderProductService) {}
@@ -28,6 +32,7 @@ export class OrderProductController {
     description: 'The order product was retrieved successfully',
     type: CreateOrderProductDto,
   })
+  @Public()
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.orderProductService.findOne(id);
   }
