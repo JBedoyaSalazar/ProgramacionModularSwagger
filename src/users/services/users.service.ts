@@ -2,25 +2,21 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config'; //Agrega la clase ConfigService para poder usar las variables de entorno
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
 import { User } from '../entities/user.entity';
-import { Order } from '../entities/order.entity';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
 
-import { ProductsService } from '../../products/services/products.service';
 import { CustomersService } from '../services/customers.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private userRepo: Repository<User>,
-    private productsService: ProductsService,
-    private configService: ConfigService,
     private customersService: CustomersService,
   ) {}
 
@@ -46,7 +42,7 @@ export class UsersService {
       where: { email },
     });
     if (!user) {
-      throw new NotFoundException(`User with email ${email} not found`);
+      throw new UnauthorizedException(`Invalid credentials`);
     }
     return user;
   }
@@ -108,11 +104,4 @@ export class UsersService {
     await this.userRepo.remove(user);
     return `User #${id} has been deleted`;
   }
-
-  // async findOrdersByUser(id: number): Promise<Order> {
-  //   // return {
-  //   //   user: await this.findOne(id),
-  //   //   products: await this.productsService.findAll(),
-  //   // };
-  // }
 }
