@@ -32,9 +32,9 @@ export class CreateUserDto {
 
   @ApiProperty({
     description: 'The role of the user',
-    example: 'admin || user',
+    example: 'admin || customer',
   })
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(Role, {
     message: `role must be one of: ${Object.values(Role).join(', ')}`,
   })

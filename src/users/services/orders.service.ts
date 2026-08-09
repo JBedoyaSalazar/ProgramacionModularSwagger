@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Order } from '../entities/order.entity';
-import { CreateOrderDto, UpdateOrderDto } from '../dtos/order.dto';
+import { UpdateOrderDto } from '../dtos/order.dto';
 
 import { CustomersService } from './customers.service';
 
@@ -14,7 +14,13 @@ export class OrdersService {
     private customersService: CustomersService,
   ) {}
 
-  async findAll() {
+  async findAll(customerId?: number) {
+    if (customerId) {
+      return await this.orderRepo.find({
+        where: { customer: { id: customerId } },
+        relations: ['customer'],
+      });
+    }
     return await this.orderRepo.find({
       relations: ['customer'],
     });
@@ -31,22 +37,16 @@ export class OrdersService {
     return order;
   }
 
-  async create(payload: CreateOrderDto) {
+  async create(customerId: number) {
     const newOrder = new Order();
-    if (payload.customerId) {
-      const customer = await this.customersService.findOne(payload.customerId);
-      newOrder.customer = customer;
-    }
+    const customer = await this.customersService.findOne(customerId);
+    newOrder.customer = customer;
     await this.orderRepo.save(newOrder);
     return this.findOne(newOrder.id);
   }
 
   async update(id: number, payload: UpdateOrderDto) {
     const order = await this.findOne(id);
-    if (payload.customerId) {
-      const customer = await this.customersService.findOne(payload.customerId);
-      order.customer = customer;
-    }
     await this.orderRepo.save(order);
     return this.findOne(id);
   }

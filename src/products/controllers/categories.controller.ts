@@ -15,9 +15,12 @@ import { CategoriesService } from '../services/categories.service';
 import { CreateCategoryDto } from '../dtos/category.dtos';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { Public } from '../../auth/decorators/public.decorators';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { RolesGuard } from '../../auth/guards/roles.guard';
+import { Role } from '../../users/enum/role.enums';
 
 @ApiTags('categories')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('categories')
 export class CategoriesController {
   constructor(private categoriesService: CategoriesService) {}
@@ -47,6 +50,7 @@ export class CategoriesController {
     return this.categoriesService.findOne(id);
   }
 
+  @Roles(Role.ADMIN)
   @Post()
   @ApiOperation({
     summary: 'Create a new category',
@@ -59,6 +63,7 @@ export class CategoriesController {
     return this.categoriesService.create(payload);
   }
 
+  @Roles(Role.ADMIN)
   @Put(':id')
   @ApiOperation({
     summary: 'Update a category by id',
@@ -74,6 +79,7 @@ export class CategoriesController {
     return this.categoriesService.update(id, payload);
   }
 
+  @Roles(Role.ADMIN)
   @Delete(':id')
   @ApiOperation({
     summary: 'Delete a category by id',

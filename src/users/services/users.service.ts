@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 
 import { User } from '../entities/user.entity';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
+import { Role } from '../enum/role.enums';
 
 import { CustomersService } from '../services/customers.service';
 
@@ -50,6 +51,9 @@ export class UsersService {
   async create(data: CreateUserDto) {
     try {
       const newUser = this.userRepo.create(data);
+      if (!newUser.role) {
+        newUser.role = Role.CUSTOMER;
+      }
 
       const hashedPassword = await bcrypt.hash(newUser.password, 10);
       newUser.password = hashedPassword;

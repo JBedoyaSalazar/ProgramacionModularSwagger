@@ -20,9 +20,12 @@ import {
 import { ProductsService } from '../services/products.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { Public } from '../../auth/decorators/public.decorators';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { RolesGuard } from '../../auth/guards/roles.guard';
+import { Role } from '../../users/enum/role.enums';
 
 @ApiTags('products')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('products')
 export class ProductsController {
   constructor(private productsService: ProductsService) {}
@@ -53,6 +56,7 @@ export class ProductsController {
     return this.productsService.findOne(productId);
   }
 
+  @Roles(Role.ADMIN)
   @Post()
   @ApiOperation({
     summary: 'Create a new product',
@@ -61,6 +65,7 @@ export class ProductsController {
     return this.productsService.create(payload);
   }
 
+  @Roles(Role.ADMIN)
   @Post(':productId/categories/:categoryId')
   @ApiOperation({
     summary: 'Add a category to a product',
@@ -76,6 +81,7 @@ export class ProductsController {
     return this.productsService.addCategoryToProduct(productId, categoryId);
   }
 
+  @Roles(Role.ADMIN)
   @Put(':id')
   @ApiOperation({
     summary: 'Update a product by id',
@@ -87,6 +93,7 @@ export class ProductsController {
     return this.productsService.update(id, payload);
   }
 
+  @Roles(Role.ADMIN)
   @Delete(':id')
   @ApiOperation({
     summary: 'Delete a product by id',
@@ -95,6 +102,7 @@ export class ProductsController {
     return this.productsService.remove(id);
   }
 
+  @Roles(Role.ADMIN)
   @Delete(':productId/categories/:categoryId')
   @ApiOperation({
     summary: 'Remove a category from a product',

@@ -4,23 +4,30 @@ import {
   ParseIntPipe,
   Param,
   Post,
-  Body,
   Put,
   Delete,
   UseGuards,
+  Req,
+  ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 
 import { OrdersService } from '../services/orders.service';
-import { CreateOrderDto, UpdateOrderDto } from '../dtos/order.dto';
+import { UsersService } from '../services/users.service';
+import { CreateOrderDto } from '../dtos/order.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-import { Public } from '../../auth/decorators/public.decorators';
+import { RolesGuard } from '../../auth/guards/roles.guard';
+import { Role } from '../enum/role.enums';
 
 @ApiTags('orders')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('orders')
 export class OrdersController {
-  constructor(private ordersService: OrdersService) {}
+  constructor(
+    private ordersService: OrdersService,
+    private usersService: UsersService,
+  ) {}
 
   @Get()
   @ApiOperation({
@@ -30,9 +37,15 @@ export class OrdersController {
     description: 'The orders were retrieved successfully',
     type: [CreateOrderDto],
   })
-  @Public()
-  findAll() {
-    return this.ordersService.findAll();
+  async findAll(@Req() req: any) {
+    const caller = await this.usersService.findOne(req.user.sub);
+    if (caller.role === Role.ADMIN) {
+      return this.ordersService.findAll();
+    }
+    if (!caller.customer) {
+      return [];
+    }
+    return this.ordersService.findAll(caller.customer.id);
   }
 
   @Get(':id')
@@ -43,9 +56,19 @@ export class OrdersController {
     description: 'The order was retrieved successfully',
     type: CreateOrderDto,
   })
-  @Public()
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.ordersService.findOne(id);
+  async findOne(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    const order = await this.ordersService.findOne(id);
+    const caller = await this.usersService.findOne(req.user.sub);
+    if (caller.role !== Role.ADMIN) {
+      if (
+        !caller.customer ||
+        !order.customer ||
+        order.customer.id !== caller.customer.id
+      ) {
+        throw new ForbiddenException('You can only access your own orders');
+      }
+    }
+    return order;
   }
 
   @Post()
@@ -56,8 +79,14 @@ export class OrdersController {
     description: 'The order was created successfully',
     type: CreateOrderDto,
   })
-  create(@Body() payload: CreateOrderDto) {
-    return this.ordersService.create(payload);
+  async create(@Req() req: any) {
+    const caller = await this.usersService.findOne(req.user.sub);
+    if (!caller.customer) {
+      throw new BadRequestException(
+        'You need a customer profile to create an order',
+      );
+    }
+    return this.ordersService.create(caller.customer.id);
   }
 
   @Put(':id')
@@ -66,13 +95,20 @@ export class OrdersController {
   })
   @ApiOkResponse({
     description: 'The order was updated successfully',
-    type: UpdateOrderDto,
   })
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() payload: UpdateOrderDto,
-  ) {
-    return this.ordersService.update(id, payload);
+  async update(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    const order = await this.ordersService.findOne(id);
+    const caller = await this.usersService.findOne(req.user.sub);
+    if (caller.role !== Role.ADMIN) {
+      if (
+        !caller.customer ||
+        !order.customer ||
+        order.customer.id !== caller.customer.id
+      ) {
+        throw new ForbiddenException('You can only update your own orders');
+      }
+    }
+    return this.ordersService.update(id, {});
   }
 
   @Delete(':id')
@@ -82,7 +118,18 @@ export class OrdersController {
   @ApiOkResponse({
     description: 'The order was deleted successfully',
   })
-  remove(@Param('id', ParseIntPipe) id: number) {
+  async remove(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    const order = await this.ordersService.findOne(id);
+    const caller = await this.usersService.findOne(req.user.sub);
+    if (caller.role !== Role.ADMIN) {
+      if (
+        !caller.customer ||
+        !order.customer ||
+        order.customer.id !== caller.customer.id
+      ) {
+        throw new ForbiddenException('You can only delete your own orders');
+      }
+    }
     return this.ordersService.remove(id);
   }
 }

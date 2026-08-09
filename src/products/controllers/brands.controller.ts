@@ -15,9 +15,12 @@ import { BrandsService } from '../services/brands.service';
 import { CreateBrandDto, UpdateBrandDto } from '../dtos/brand.dtos';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { Public } from '../../auth/decorators/public.decorators';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { RolesGuard } from '../../auth/guards/roles.guard';
+import { Role } from '../../users/enum/role.enums';
 
 @ApiTags('brands')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('brands')
 export class BrandsController {
   constructor(private brandsService: BrandsService) {}
@@ -48,6 +51,7 @@ export class BrandsController {
     return this.brandsService.findOne(id);
   }
 
+  @Roles(Role.ADMIN)
   @Post()
   @ApiOperation({
     summary: 'Create a new brand',
@@ -56,6 +60,7 @@ export class BrandsController {
     return this.brandsService.create(payload);
   }
 
+  @Roles(Role.ADMIN)
   @Put(':id')
   @ApiOperation({
     summary: 'Update a brand by id',
@@ -67,6 +72,7 @@ export class BrandsController {
     return this.brandsService.update(id, payload);
   }
 
+  @Roles(Role.ADMIN)
   @Delete(':id')
   @ApiOperation({
     summary: 'Delete a brand by id',
